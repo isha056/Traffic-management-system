@@ -1,0 +1,446 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Traffic Management System{% endblock %}
+
+{% block extra_css %}
+<style>
+    #video-feed {
+        width: 100%;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+    }
+    .stats-card {
+        transition: all 0.3s ease;
+    }
+    .stats-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    .violation-alert {
+        opacity: 0;
+        transition: opacity 0.5s ease;
+    }
+    .show-alert {
+        opacity: 1;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <!-- Video Stream and Controls -->
+        <div class="card shadow mb-4">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-video me-2"></i>Live Traffic Feed</h5>
+                <div>
+                    <button id="start-btn" class="btn btn-light btn-sm">
+                        <i class="fas fa-play me-1"></i>Start
+                    </button>
+                    <button id="stop-btn" class="btn btn-light btn-sm" disabled>
+                        <i class="fas fa-stop me-1"></i>Stop
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-3" id="video-container">
+                    <img id="video-feed" src="https://via.placeholder.com/800x450?text=Press+Start+to+Begin+Stream" alt="Traffic Video Feed">
+                </div>
+                <div class="mb-3">
+                    <label for="video-source" class="form-label">Video Source:</label>
+                    <select id="video-source" class="form-select">
+                        <option value="my.mp4" selected>Traffic Video (my.mp4)</option>
+                        <option value="0">Webcam</option>
+                    </select>
+                </div>
+                <div id="loading-indicator" class="text-center d-none">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p>Starting video processing...</p>
+                </div>
+                <div id="violation-alert" class="alert alert-danger violation-alert" role="alert">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    <span id="violation-message">Violation detected!</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <!-- Vehicle Counts -->
+        <div class="card shadow mb-4">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="fas fa-car me-2"></i>Vehicle Counts</h5>
+            </div>
+            <div class="card-body">
+                <div id="vehicle-counts-container">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span><i class="fas fa-car me-2"></i>Cars:</span>
+                        <span id="car-count" class="badge bg-primary">0</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span><i class="fas fa-truck me-2"></i>Trucks:</span>
+                        <span id="truck-count" class="badge bg-primary">0</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span><i class="fas fa-bus me-2"></i>Buses:</span>
+                        <span id="bus-count" class="badge bg-primary">0</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span><i class="fas fa-motorcycle me-2"></i>Motorcycles:</span>
+                        <span id="motorcycle-count" class="badge bg-primary">0</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span><i class="fas fa-bicycle me-2"></i>Bicycles:</span>
+                        <span id="bicycle-count" class="badge bg-primary">0</span>
+                    </div>
+                </div>
+                <hr>
+                <div class="text-center">
+                    <h6>Total Vehicles</h6>
+                    <h3 id="total-count" class="text-primary">0</h3>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Violation Stats -->
+        <div class="card shadow mb-4">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Violations</h5>
+            </div>
+            <div class="card-body">
+                <div id="violations-container">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span><i class="fas fa-tachometer-alt me-2"></i>Speeding:</span>
+                        <span id="speeding-count" class="badge bg-danger">0</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span><i class="fas fa-traffic-light me-2"></i>Red Light:</span>
+                        <span id="red-light-count" class="badge bg-danger">0</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span><i class="fas fa-random me-2"></i>Wrong Way:</span>
+                        <span id="wrong-way-count" class="badge bg-danger">0</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span><i class="fas fa-parking me-2"></i>Illegal Parking:</span>
+                        <span id="illegal-parking-count" class="badge bg-danger">0</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span><i class="fas fa-hard-hat me-2"></i>No Helmet:</span>
+                        <span id="no-helmet-count" class="badge bg-danger">0</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span><i class="fas fa-walking me-2"></i>Unauthorized Person:</span>
+                        <span id="unauthorized-person-count" class="badge bg-danger">0</span>
+                    </div>
+                </div>
+                <hr>
+                <div class="text-center">
+                    <h6>Total Violations</h6>
+                    <h3 id="total-violations" class="text-danger">0</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Dashboard Charts -->
+<div class="row">
+    <div class="col-md-6">
+        <div class="card shadow mb-4">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Vehicle Distribution</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="vehicle-chart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card shadow mb-4">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Violation Distribution</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="violation-chart" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize Socket.IO
+        const socket = io();
+        let processing = false;
+        
+        // DOM elements
+        const videoFeed = document.getElementById('video-feed');
+        const startBtn = document.getElementById('start-btn');
+        const stopBtn = document.getElementById('stop-btn');
+        const loadingIndicator = document.getElementById('loading-indicator');
+        const violationAlert = document.getElementById('violation-alert');
+        const violationMessage = document.getElementById('violation-message');
+        
+        // Charts
+        let vehicleChart = null;
+        let violationChart = null;
+        
+        // Initialize charts
+        initCharts();
+        
+        // Hide violation alert initially
+        violationAlert.style.display = 'none';
+        
+        // Connect to socket
+        socket.on('connect', function() {
+            console.log('Connected to server');
+        });
+        
+        // Handle disconnection
+        socket.on('disconnect', function() {
+            console.log('Disconnected from server');
+            setProcessingState(false);
+        });
+        
+        // Handle frame updates
+        socket.on('frame_update', function(data) {
+            // Update video feed
+            if (data.frame) {
+                videoFeed.src = 'data:image/jpeg;base64,' + data.frame;
+            }
+            
+            // Update vehicle counts
+            updateVehicleCounts(data.vehicle_counts);
+            
+            // Update violation counts
+            updateViolationCounts(data.violations);
+            
+            // Update charts
+            updateCharts(data.vehicle_counts, data.violations);
+        });
+        
+        // Start button event
+        startBtn.addEventListener('click', function() {
+            if (processing) return;
+            
+            setProcessingState(true);
+            loadingIndicator.classList.remove('d-none');
+            
+            // Send request to start processing
+            fetch('/start_processing', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'video_path=' + document.getElementById('video-source').value
+            })
+            .then(response => response.json())
+            .then(data => {
+                loadingIndicator.classList.add('d-none');
+                if (data.status === 'success') {
+                    console.log('Processing started');
+                } else {
+                    console.error('Failed to start processing:', data.message);
+                    setProcessingState(false);
+                    alert('Failed to start processing: ' + data.message);
+                }
+            })
+            .catch(error => {
+                loadingIndicator.classList.add('d-none');
+                console.error('Error:', error);
+                setProcessingState(false);
+                alert('Error starting processing: ' + error);
+            });
+        });
+        
+        // Stop button event
+        stopBtn.addEventListener('click', function() {
+            if (!processing) return;
+            
+            // Send request to stop processing
+            fetch('/stop_processing', {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    console.log('Processing stopped');
+                    setProcessingState(false);
+                } else {
+                    console.error('Failed to stop processing:', data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error stopping processing: ' + error);
+            });
+        });
+        
+        function setProcessingState(state) {
+            processing = state;
+            startBtn.disabled = state;
+            stopBtn.disabled = !state;
+            
+            if (!state) {
+                videoFeed.src = 'https://via.placeholder.com/800x450?text=Press+Start+to+Begin+Stream';
+            }
+        }
+        
+        function updateVehicleCounts(counts) {
+            // Update individual counts
+            document.getElementById('car-count').textContent = counts.car || 0;
+            document.getElementById('truck-count').textContent = counts.truck || 0;
+            document.getElementById('bus-count').textContent = counts.bus || 0;
+            document.getElementById('motorcycle-count').textContent = counts.motorcycle || 0;
+            document.getElementById('bicycle-count').textContent = counts.bicycle || 0;
+            
+            // Update total
+            const total = Object.values(counts).reduce((sum, count) => sum + count, 0);
+            document.getElementById('total-count').textContent = total;
+        }
+        
+        function updateViolationCounts(violations) {
+            // Update individual counts
+            document.getElementById('speeding-count').textContent = violations.speeding || 0;
+            document.getElementById('red-light-count').textContent = violations.red_light || 0;
+            document.getElementById('wrong-way-count').textContent = violations.wrong_way || 0;
+            document.getElementById('illegal-parking-count').textContent = violations.illegal_parking || 0;
+            document.getElementById('no-helmet-count').textContent = violations.no_helmet || 0;
+            document.getElementById('unauthorized-person-count').textContent = violations.unauthorized_person || 0;
+            
+            // Update total
+            const total = Object.values(violations).reduce((sum, count) => sum + count, 0);
+            document.getElementById('total-violations').textContent = total;
+            
+            // Show violation alert if any new violations
+            if (total > 0) {
+                showViolationAlert('New traffic violation detected!');
+            }
+        }
+        
+        function showViolationAlert(message) {
+            violationMessage.textContent = message;
+            violationAlert.style.display = 'block';
+            violationAlert.classList.add('show-alert');
+            
+            setTimeout(() => {
+                violationAlert.classList.remove('show-alert');
+                setTimeout(() => {
+                    violationAlert.style.display = 'none';
+                }, 500);
+            }, 3000);
+        }
+        
+        function initCharts() {
+            // Vehicle distribution chart
+            const vehicleCtx = document.getElementById('vehicle-chart').getContext('2d');
+            vehicleChart = new Chart(vehicleCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Cars', 'Trucks', 'Buses', 'Motorcycles', 'Bicycles'],
+                    datasets: [{
+                        label: 'Count',
+                        data: [0, 0, 0, 0, 0],
+                        backgroundColor: [
+                            'rgba(54, 162, 235, 0.7)',
+                            'rgba(255, 159, 64, 0.7)',
+                            'rgba(75, 192, 192, 0.7)',
+                            'rgba(153, 102, 255, 0.7)',
+                            'rgba(255, 205, 86, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgb(54, 162, 235)',
+                            'rgb(255, 159, 64)',
+                            'rgb(75, 192, 192)',
+                            'rgb(153, 102, 255)',
+                            'rgb(255, 205, 86)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Violation distribution chart
+            const violationCtx = document.getElementById('violation-chart').getContext('2d');
+            violationChart = new Chart(violationCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['Speeding', 'Red Light', 'Wrong Way', 'Illegal Parking', 'No Helmet', 'Unauthorized Person'],
+                    datasets: [{
+                        data: [0, 0, 0, 0, 0, 0],
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.7)',
+                            'rgba(54, 162, 235, 0.7)',
+                            'rgba(255, 159, 64, 0.7)',
+                            'rgba(75, 192, 192, 0.7)',
+                            'rgba(153, 102, 255, 0.7)',
+                            'rgba(255, 99, 71, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgb(255, 99, 132)',
+                            'rgb(54, 162, 235)',
+                            'rgb(255, 159, 64)',
+                            'rgb(75, 192, 192)',
+                            'rgb(153, 102, 255)',
+                            'rgb(255, 99, 71)',
+                            'rgb(75, 192, 192)',
+                            'rgb(153, 102, 255)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true
+                }
+            });
+        }
+        
+        function updateCharts(vehicleCounts, violations) {
+            // Update vehicle chart
+            if (vehicleChart) {
+                vehicleChart.data.datasets[0].data = [
+                    vehicleCounts.car || 0,
+                    vehicleCounts.truck || 0,
+                    vehicleCounts.bus || 0,
+                    vehicleCounts.motorcycle || 0,
+                    vehicleCounts.bicycle || 0
+                ];
+                vehicleChart.update();
+            }
+            
+            // Update violation chart
+            if (violationChart) {
+                violationChart.data.datasets[0].data = [
+                    violations.speeding || 0,
+                    violations.red_light || 0,
+                    violations.wrong_way || 0,
+                    violations.illegal_parking || 0,
+                    violations.no_helmet || 0
+                ];
+                violationChart.update();
+            }
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,245 @@
+/* Main Styles for Traffic Management System */
+
+/* General Styles */
+body {
+    background-color: #f8f9fa;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.container-fluid {
+    max-width: 1400px;
+}
+
+/* Navbar */
+.navbar-brand {
+    font-weight: 600;
+}
+
+/* Cards */
+.card {
+    margin-bottom: 20px;
+    border: none;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.card-header {
+    font-weight: 600;
+}
+
+/* Stats Cards */
+.stats-card {
+    text-align: center;
+    padding: 15px;
+    border-radius: 10px;
+}
+
+.stats-card i {
+    font-size: 2rem;
+    margin-bottom: 10px;
+}
+
+.stats-icon {
+    font-size: 2rem;
+    margin-bottom: 10px;
+}
+
+/* Video Feed */
+#video-feed {
+    max-width: 100%;
+    height: auto;
+    border-radius: 5px;
+}
+
+/* Dashboard */
+.dashboard-title {
+    color: #0d6efd;
+    margin-bottom: 20px;
+}
+
+.dashboard-subtitle {
+    color: #6c757d;
+    margin-bottom: 30px;
+}
+
+/* Violation Styles */
+.violation-list {
+    list-style: none;
+    padding: 0;
+}
+
+.violation-item {
+    padding: 15px;
+    border-bottom: 1px solid #e9ecef;
+    transition: background-color 0.3s ease;
+}
+
+.violation-item:hover {
+    background-color: #f8f9fa;
+}
+
+.violation-type {
+    font-weight: 600;
+}
+
+.violation-time {
+    color: #6c757d;
+    font-size: 0.875rem;
+}
+
+.violation-details {
+    margin-top: 5px;
+}
+
+/* Alerts */
+.violation-alert {
+    position: relative;
+    padding: 0.75rem 1.25rem;
+    margin-bottom: 1rem;
+    border: 1px solid transparent;
+    border-radius: 0.25rem;
+    animation: alertPulse 2s infinite;
+}
+
+@keyframes alertPulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.7; }
+    100% { opacity: 1; }
+}
+
+/* Footer */
+.footer {
+    margin-top: 50px;
+    padding: 20px 0;
+    background-color: #f8f9fa;
+    border-top: 1px solid #e9ecef;
+}
+
+/* Settings Page */
+.settings-title {
+    font-size: 1.5rem;
+    color: #0d6efd;
+    margin-bottom: 15px;
+    border-bottom: 2px solid #e9ecef;
+    padding-bottom: 10px;
+}
+
+.form-range::-webkit-slider-thumb {
+    background-color: #0d6efd;
+}
+
+.form-range::-moz-range-thumb {
+    background-color: #0d6efd;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+    .card-body {
+        padding: 15px;
+    }
+    
+    .stats-card i {
+        font-size: 1.5rem;
+    }
+    
+    .stats-card h5 {
+        font-size: 1rem;
+    }
+    
+    .stats-card h3 {
+        font-size: 1.5rem;
+    }
+}
+
+/* Animation for video feed */
+@keyframes videoFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+#video-feed.loading {
+    animation: videoFadeIn 1s ease;
+}
+
+/* Custom badges */
+.badge-speeding {
+    background-color: #dc3545;
+    color: white;
+}
+
+.badge-red-light {
+    background-color: #fd7e14;
+    color: white;
+}
+
+.badge-wrong-way {
+    background-color: #0dcaf0;
+    color: white;
+}
+
+.badge-illegal-parking {
+    background-color: #0d6efd;
+    color: white;
+}
+
+.badge-no-helmet {
+    background-color: #6c757d;
+    color: white;
+}
+
+/* Card hover effects */
+.hover-card {
+    transition: transform 0.3s ease;
+}
+
+.hover-card:hover {
+    transform: translateY(-5px);
+}
+
+/* Loading spinner */
+.loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    border-radius: 5px;
+}
+
+/* Custom switch styling */
+.form-check-input:checked {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+/* Custom switch colors */
+.switch-success .form-check-input:checked {
+    background-color: #198754;
+    border-color: #198754;
+}
+
+.switch-danger .form-check-input:checked {
+    background-color: #dc3545;
+    border-color: #dc3545;
+}
+
+.switch-warning .form-check-input:checked {
+    background-color: #fd7e14;
+    border-color: #fd7e14;
+}
+
+/* Chart container */
+.chart-container {
+    position: relative;
+    height: 300px;
+    width: 100%;
+}

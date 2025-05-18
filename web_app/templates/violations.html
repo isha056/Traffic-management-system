@@ -1,0 +1,447 @@
+{% extends "base.html" %}
+
+{% block title %}Violations - Traffic Management System{% endblock %}
+
+{% block extra_css %}
+<style>
+    .violation-card {
+        transition: all 0.3s ease;
+    }
+    .violation-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    .violation-image {
+        height: 150px;
+        object-fit: cover;
+    }
+    .violation-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-lg-8">
+        <h2><i class="fas fa-exclamation-triangle text-danger me-2"></i>Traffic Violations</h2>
+        <p class="lead">View and manage detected traffic violations</p>
+    </div>
+    <div class="col-lg-4 text-end">
+        <div class="btn-group" role="group">
+            <a href="#" class="btn btn-outline-primary active" id="all-filter">All</a>
+            <a href="#" class="btn btn-outline-primary" id="speeding-filter">Speeding</a>
+            <a href="#" class="btn btn-outline-primary" id="red-light-filter">Red Light</a>
+            <a href="#" class="btn btn-outline-primary" id="wrong-way-filter">Wrong Way</a>
+            <a href="#" class="btn btn-outline-primary" id="illegal-parking-filter">Illegal Parking</a>
+            <a href="#" class="btn btn-outline-primary" id="no-helmet-filter">No Helmet</a>
+        </div>
+    </div>
+</div>
+
+<!-- Violation Statistics Summary -->
+<div class="row mb-4">
+    <div class="col-md-2">
+        <div class="card bg-danger text-white">
+            <div class="card-body text-center">
+                <i class="fas fa-tachometer-alt fa-2x mb-2"></i>
+                <h5>Speeding</h5>
+                <h3 id="speeding-count">0</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card bg-warning text-dark">
+            <div class="card-body text-center">
+                <i class="fas fa-traffic-light fa-2x mb-2"></i>
+                <h5>Red Light</h5>
+                <h3 id="red-light-count">0</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card bg-info text-white">
+            <div class="card-body text-center">
+                <i class="fas fa-random fa-2x mb-2"></i>
+                <h5>Wrong Way</h5>
+                <h3 id="wrong-way-count">0</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card bg-primary text-white">
+            <div class="card-body text-center">
+                <i class="fas fa-parking fa-2x mb-2"></i>
+                <h5>Illegal Parking</h5>
+                <h3 id="illegal-parking-count">0</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card bg-secondary text-white">
+            <div class="card-body text-center">
+                <i class="fas fa-hard-hat fa-2x mb-2"></i>
+                <h5>No Helmet</h5>
+                <h3 id="no-helmet-count">0</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card bg-dark text-white">
+            <div class="card-body text-center">
+                <i class="fas fa-chart-line fa-2x mb-2"></i>
+                <h5>Total</h5>
+                <h3 id="total-count">0</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Violation List -->
+<div class="card shadow mb-4">
+    <div class="card-header bg-light">
+        <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="fas fa-list me-2"></i>Violation Records</h5>
+            <input type="text" class="form-control form-control-sm" style="width: 200px;" placeholder="Search violations..." id="violation-search">
+        </div>
+    </div>
+    <div class="card-body">
+        <div id="violations-container" class="row"></div>
+        
+        <div id="empty-state" class="text-center py-5 d-none">
+            <i class="fas fa-clipboard-check fa-4x text-muted mb-3"></i>
+            <h4>No Violations Detected</h4>
+            <p>Start the traffic monitoring system to detect and log violations</p>
+        </div>
+        
+        <div id="loading" class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p>Loading violation data...</p>
+        </div>
+    </div>
+</div>
+
+<!-- Violation Details Modal -->
+<div class="modal fade" id="violationModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-exclamation-triangle text-danger me-2"></i>Violation Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <img id="modal-image" src="https://via.placeholder.com/400x300?text=Violation+Image" class="img-fluid rounded mb-3" alt="Violation">
+                    </div>
+                    <div class="col-md-6">
+                        <h5 id="modal-type">Violation Type</h5>
+                        <p id="modal-details">Details about the violation will appear here.</p>
+                        
+                        <div class="mb-3">
+                            <strong>Date & Time:</strong>
+                            <p id="modal-timestamp">2025-04-30 08:00:00</p>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <strong>Vehicle Type:</strong>
+                            <p id="modal-vehicle">Car</p>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <strong>Vehicle ID:</strong>
+                            <p id="modal-id">12345</p>
+                        </div>
+                        
+                        <div id="modal-speed-container" class="mb-3">
+                            <strong>Speed:</strong>
+                            <p id="modal-speed">75 km/h</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary">Download Report</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Socket.IO connection
+        const socket = io();
+        
+        // DOM elements
+        const violationsContainer = document.getElementById('violations-container');
+        const emptyState = document.getElementById('empty-state');
+        const loading = document.getElementById('loading');
+        const searchInput = document.getElementById('violation-search');
+        
+        // Filter buttons
+        const allFilter = document.getElementById('all-filter');
+        const speedingFilter = document.getElementById('speeding-filter');
+        const redLightFilter = document.getElementById('red-light-filter');
+        const wrongWayFilter = document.getElementById('wrong-way-filter');
+        const illegalParkingFilter = document.getElementById('illegal-parking-filter');
+        const noHelmetFilter = document.getElementById('no-helmet-filter');
+        
+        // Counters
+        let violations = [];
+        let currentFilter = 'all';
+        let searchTerm = '';
+        
+        // Initialize the page
+        fetchViolations();
+        
+        // Handle socket updates
+        socket.on('connect', function() {
+            console.log('Connected to server');
+        });
+        
+        socket.on('frame_update', function(data) {
+            updateViolationCounts(data.violations);
+        });
+        
+        // Fetch all violations
+        function fetchViolations() {
+            loading.classList.remove('d-none');
+            emptyState.classList.add('d-none');
+            violationsContainer.innerHTML = '';
+            
+            fetch('/api/violations')
+                .then(response => response.json())
+                .then(data => {
+                    loading.classList.add('d-none');
+                    
+                    // Update counts
+                    updateViolationCounts(data.counts);
+                    
+                    // Get violation details
+                    violations = data.recent || [];
+                    
+                    if (violations.length === 0) {
+                        emptyState.classList.remove('d-none');
+                    } else {
+                        emptyState.classList.add('d-none');
+                        renderViolations();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching violations:', error);
+                    loading.classList.add('d-none');
+                    emptyState.classList.remove('d-none');
+                });
+        }
+        
+        // Update violation counts
+        function updateViolationCounts(counts) {
+            document.getElementById('speeding-count').textContent = counts.speeding || 0;
+            document.getElementById('red-light-count').textContent = counts.red_light || 0;
+            document.getElementById('wrong-way-count').textContent = counts.wrong_way || 0;
+            document.getElementById('illegal-parking-count').textContent = counts.illegal_parking || 0;
+            document.getElementById('no-helmet-count').textContent = counts.no_helmet || 0;
+            
+            const total = Object.values(counts).reduce((sum, count) => sum + count, 0);
+            document.getElementById('total-count').textContent = total;
+        }
+        
+        // Render violations with filtering
+        function renderViolations() {
+            violationsContainer.innerHTML = '';
+            
+            // Filter violations
+            const filteredViolations = violations.filter(violation => {
+                // Apply type filter
+                if (currentFilter !== 'all' && violation.type !== currentFilter) {
+                    return false;
+                }
+                
+                // Apply search filter
+                if (searchTerm !== '') {
+                    return (
+                        violation.type.toLowerCase().includes(searchTerm) ||
+                        violation.details.toLowerCase().includes(searchTerm) ||
+                        violation.timestamp.toLowerCase().includes(searchTerm)
+                    );
+                }
+                
+                return true;
+            });
+            
+            if (filteredViolations.length === 0) {
+                emptyState.classList.remove('d-none');
+                return;
+            }
+            
+            emptyState.classList.add('d-none');
+            
+            // Create violation cards
+            filteredViolations.forEach((violation, index) => {
+                let badgeClass = 'bg-secondary';
+                let iconClass = 'fa-exclamation-circle';
+                
+                switch (violation.type) {
+                    case 'speeding':
+                        badgeClass = 'bg-danger';
+                        iconClass = 'fa-tachometer-alt';
+                        break;
+                    case 'red_light':
+                        badgeClass = 'bg-warning text-dark';
+                        iconClass = 'fa-traffic-light';
+                        break;
+                    case 'wrong_way':
+                        badgeClass = 'bg-info';
+                        iconClass = 'fa-random';
+                        break;
+                    case 'illegal_parking':
+                        badgeClass = 'bg-primary';
+                        iconClass = 'fa-parking';
+                        break;
+                    case 'no_helmet':
+                        badgeClass = 'bg-secondary';
+                        iconClass = 'fa-hard-hat';
+                        break;
+                }
+                
+                const card = document.createElement('div');
+                card.className = 'col-md-4 mb-4';
+                card.innerHTML = `
+                    <div class="card violation-card shadow-sm">
+                        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                            <span><i class="fas ${iconClass} me-2"></i>${formatViolationType(violation.type)}</span>
+                            <span class="badge ${badgeClass} violation-badge">${index + 1}</span>
+                        </div>
+                        <img src="https://via.placeholder.com/400x300?text=${formatViolationType(violation.type).replace(' ', '+')}" 
+                             class="violation-image" alt="Violation Image">
+                        <div class="card-body">
+                            <p class="card-text">${violation.details}</p>
+                            <p class="text-muted small mb-2"><i class="far fa-clock me-1"></i>${violation.timestamp}</p>
+                            <button class="btn btn-sm btn-outline-primary view-details" 
+                                    data-index="${index}">View Details</button>
+                        </div>
+                    </div>
+                `;
+                violationsContainer.appendChild(card);
+                
+                // Add event listener to the button
+                card.querySelector('.view-details').addEventListener('click', function() {
+                    showViolationDetails(violation);
+                });
+            });
+        }
+        
+        // Show violation details in modal
+        function showViolationDetails(violation) {
+            const modal = new bootstrap.Modal(document.getElementById('violationModal'));
+            
+            // Set modal content
+            document.getElementById('modal-type').textContent = formatViolationType(violation.type);
+            document.getElementById('modal-details').textContent = violation.details;
+            document.getElementById('modal-timestamp').textContent = violation.timestamp;
+            document.getElementById('modal-vehicle').textContent = violation.details.split(' ')[0]; // Extract vehicle type
+            document.getElementById('modal-id').textContent = violation.vehicle_id;
+            
+            // Set speed if available
+            const speedContainer = document.getElementById('modal-speed-container');
+            if (violation.speed) {
+                speedContainer.classList.remove('d-none');
+                document.getElementById('modal-speed').textContent = `${violation.speed.toFixed(1)} km/h`;
+            } else {
+                speedContainer.classList.add('d-none');
+            }
+            
+            // Set image
+            document.getElementById('modal-image').src = 
+                `https://via.placeholder.com/400x300?text=${formatViolationType(violation.type).replace(' ', '+')}`;
+            
+            // Show modal
+            modal.show();
+        }
+        
+        // Format violation type for display
+        function formatViolationType(type) {
+            switch (type) {
+                case 'speeding': return 'Speeding';
+                case 'red_light': return 'Red Light';
+                case 'wrong_way': return 'Wrong Way';
+                case 'illegal_parking': return 'Illegal Parking';
+                case 'no_helmet': return 'No Helmet';
+                default: return type.charAt(0).toUpperCase() + type.slice(1).replace('_', ' ');
+            }
+        }
+        
+        // Filter event listeners
+        allFilter.addEventListener('click', function(e) {
+            e.preventDefault();
+            setActiveFilter('all');
+        });
+        
+        speedingFilter.addEventListener('click', function(e) {
+            e.preventDefault();
+            setActiveFilter('speeding');
+        });
+        
+        redLightFilter.addEventListener('click', function(e) {
+            e.preventDefault();
+            setActiveFilter('red_light');
+        });
+        
+        wrongWayFilter.addEventListener('click', function(e) {
+            e.preventDefault();
+            setActiveFilter('wrong_way');
+        });
+        
+        illegalParkingFilter.addEventListener('click', function(e) {
+            e.preventDefault();
+            setActiveFilter('illegal_parking');
+        });
+        
+        noHelmetFilter.addEventListener('click', function(e) {
+            e.preventDefault();
+            setActiveFilter('no_helmet');
+        });
+        
+        // Search input event
+        searchInput.addEventListener('input', function() {
+            searchTerm = this.value.toLowerCase();
+            renderViolations();
+        });
+        
+        // Set active filter
+        function setActiveFilter(filter) {
+            currentFilter = filter;
+            
+            // Remove active class from all filters
+            allFilter.classList.remove('active');
+            speedingFilter.classList.remove('active');
+            redLightFilter.classList.remove('active');
+            wrongWayFilter.classList.remove('active');
+            illegalParkingFilter.classList.remove('active');
+            noHelmetFilter.classList.remove('active');
+            
+            // Add active class to selected filter
+            switch (filter) {
+                case 'all': allFilter.classList.add('active'); break;
+                case 'speeding': speedingFilter.classList.add('active'); break;
+                case 'red_light': redLightFilter.classList.add('active'); break;
+                case 'wrong_way': wrongWayFilter.classList.add('active'); break;
+                case 'illegal_parking': illegalParkingFilter.classList.add('active'); break;
+                case 'no_helmet': noHelmetFilter.classList.add('active'); break;
+            }
+            
+            renderViolations();
+        }
+        
+        // Refresh data every 10 seconds
+        setInterval(fetchViolations, 10000);
+    });
+</script>
+{% endblock %}

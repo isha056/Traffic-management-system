@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Traffic Management System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 offset-lg-2">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h2 class="mb-0"><i class="fas fa-traffic-light me-2"></i>AI-Driven Traffic Management System</h2>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    <img src="{{ url_for('static', filename='img/traffic_banner.jpg') }}" alt="Traffic Management" class="img-fluid rounded mb-4" onerror="this.src='https://via.placeholder.com/800x300?text=Traffic+Management+System'">
+                    
+                    <h3 class="mb-3">Welcome to Traffic Management System</h3>
+                    <p class="lead">
+                        An advanced AI-powered system for traffic monitoring and violation detection.
+                    </p>
+                </div>
+                
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        <div class="card h-100 border-primary">
+                            <div class="card-body text-center">
+                                <i class="fas fa-video fa-3x text-primary mb-3"></i>
+                                <h4>Real-time Monitoring</h4>
+                                <p>Monitor traffic flow and detect vehicles in real-time using advanced computer vision.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card h-100 border-danger">
+                            <div class="card-body text-center">
+                                <i class="fas fa-exclamation-triangle fa-3x text-danger mb-3"></i>
+                                <h4>Violation Detection</h4>
+                                <p>Automatically identify traffic violations including speeding, red light violations, and more.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card h-100 border-success">
+                            <div class="card-body text-center">
+                                <i class="fas fa-chart-line fa-3x text-success mb-3"></i>
+                                <h4>Data Analytics</h4>
+                                <p>Generate insights and statistics on traffic patterns and violation trends.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="text-center mt-4">
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-tachometer-alt me-2"></i>Go to Dashboard
+                    </a>
+                </div>
+            </div>
+            <div class="card-footer bg-light">
+                <div class="small text-muted">
+                    <strong>Supported Violations:</strong> Speeding, Red Light, Wrong Way, Illegal Parking, No Helmet
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

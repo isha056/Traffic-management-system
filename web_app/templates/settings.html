@@ -1,0 +1,338 @@
+{% extends "base.html" %}
+
+{% block title %}Settings - Traffic Management System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 offset-lg-2">
+        <div class="card shadow mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-cog me-2"></i>System Settings</h5>
+            </div>
+            <div class="card-body">
+                <form id="settings-form" class="needs-validation" novalidate>
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h5 class="border-bottom pb-2">Video Source</h5>
+                            <div class="mb-3">
+                                <label for="video-source" class="form-label">Video Source Type</label>
+                                <select class="form-select" id="video-source" required>
+                                    <option value="file" selected>Video File</option>
+                                    <option value="webcam">Webcam</option>
+                                    <option value="rtsp">RTSP Stream</option>
+                                </select>
+                            </div>
+                            
+                            <div class="mb-3" id="file-path-container">
+                                <label for="video-path" class="form-label">Video File Path</label>
+                                <input type="text" class="form-control" id="video-path" 
+                                       value="Traffic-Management-System/my.mp4" required>
+                                <div class="form-text">Relative path to video file</div>
+                            </div>
+                            
+                            <div class="mb-3 d-none" id="rtsp-url-container">
+                                <label for="rtsp-url" class="form-label">RTSP URL</label>
+                                <input type="text" class="form-control" id="rtsp-url" 
+                                       placeholder="rtsp://username:password@ip:port/stream">
+                                <div class="form-text">Full RTSP stream URL</div>
+                            </div>
+                            
+                            <div class="mb-3 d-none" id="webcam-id-container">
+                                <label for="webcam-id" class="form-label">Webcam ID</label>
+                                <input type="number" class="form-control" id="webcam-id" min="0" value="0">
+                                <div class="form-text">Device ID for the webcam (usually 0 for built-in)</div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <h5 class="border-bottom pb-2">Detection Settings</h5>
+                            <div class="mb-3">
+                                <label for="confidence-threshold" class="form-label">
+                                    Confidence Threshold: <span id="confidence-value">0.5</span>
+                                </label>
+                                <input type="range" class="form-range" id="confidence-threshold" 
+                                       min="0.1" max="0.9" step="0.05" value="0.5">
+                                <div class="form-text">Minimum confidence score for detections (higher = more precise but may miss objects)</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="speed-threshold" class="form-label">
+                                    Speed Limit (km/h): <span id="speed-value">60</span>
+                                </label>
+                                <input type="range" class="form-range" id="speed-threshold" 
+                                       min="20" max="120" step="5" value="60">
+                                <div class="form-text">Speed threshold for violation detection</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="enable-red-light" checked>
+                                    <label class="form-check-label" for="enable-red-light">Enable Red Light Violation Detection</label>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="enable-wrong-way" checked>
+                                    <label class="form-check-label" for="enable-wrong-way">Enable Wrong Way Detection</label>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="enable-illegal-parking" checked>
+                                    <label class="form-check-label" for="enable-illegal-parking">Enable Illegal Parking Detection</label>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="enable-no-helmet" checked>
+                                    <label class="form-check-label" for="enable-no-helmet">Enable No Helmet Detection</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h5 class="border-bottom pb-2">Output Settings</h5>
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="save-output" checked>
+                                    <label class="form-check-label" for="save-output">Save Output Video</label>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="output-path" class="form-label">Output Path</label>
+                                <input type="text" class="form-control" id="output-path" 
+                                       value="output/traffic_analysis.mp4">
+                                <div class="form-text">Path where to save the output video</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="save-violations" checked>
+                                    <label class="form-check-label" for="save-violations">Save Violation Screenshots</label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <h5 class="border-bottom pb-2">Notification Settings</h5>
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="enable-email-alerts">
+                                    <label class="form-check-label" for="enable-email-alerts">Enable Email Alerts</label>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="email-recipients" class="form-label">Email Recipients</label>
+                                <input type="email" class="form-control" id="email-recipients" 
+                                       placeholder="email@example.com" disabled>
+                                <div class="form-text">Comma-separated list of email addresses</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="enable-web-notifications" checked>
+                                    <label class="form-check-label" for="enable-web-notifications">Enable Web Notifications</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <button type="button" class="btn btn-secondary me-md-2" id="reset-defaults">Reset to Defaults</button>
+                        <button type="submit" class="btn btn-primary">Save Settings</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card shadow">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>System Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>System Version:</strong> 1.0.0</p>
+                        <p><strong>YOLO Model:</strong> YOLOv8n</p>
+                        <p><strong>OpenCV Version:</strong> 4.5.5</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Total Detections:</strong> <span id="total-detections">0</span></p>
+                        <p><strong>Total Violations:</strong> <span id="total-violations">0</span></p>
+                        <p><strong>System Uptime:</strong> <span id="system-uptime">0h 0m 0s</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // DOM elements
+        const videoSource = document.getElementById('video-source');
+        const filePathContainer = document.getElementById('file-path-container');
+        const rtspUrlContainer = document.getElementById('rtsp-url-container');
+        const webcamIdContainer = document.getElementById('webcam-id-container');
+        const confidenceThreshold = document.getElementById('confidence-threshold');
+        const confidenceValue = document.getElementById('confidence-value');
+        const speedThreshold = document.getElementById('speed-threshold');
+        const speedValue = document.getElementById('speed-value');
+        const enableEmailAlerts = document.getElementById('enable-email-alerts');
+        const emailRecipients = document.getElementById('email-recipients');
+        const settingsForm = document.getElementById('settings-form');
+        const resetDefaultsBtn = document.getElementById('reset-defaults');
+        
+        // Socket.IO connection
+        const socket = io();
+        
+        // Update system info
+        socket.on('frame_update', function(data) {
+            const totalVehicles = Object.values(data.vehicle_counts || {}).reduce((sum, count) => sum + count, 0);
+            const totalViolations = Object.values(data.violations || {}).reduce((sum, count) => sum + count, 0);
+            
+            document.getElementById('total-detections').textContent = totalVehicles;
+            document.getElementById('total-violations').textContent = totalViolations;
+        });
+        
+        // Update uptime
+        let uptimeSeconds = 0;
+        setInterval(function() {
+            uptimeSeconds++;
+            const hours = Math.floor(uptimeSeconds / 3600);
+            const minutes = Math.floor((uptimeSeconds % 3600) / 60);
+            const seconds = uptimeSeconds % 60;
+            document.getElementById('system-uptime').textContent = `${hours}h ${minutes}m ${seconds}s`;
+        }, 1000);
+        
+        // Video source change handler
+        videoSource.addEventListener('change', function() {
+            const value = this.value;
+            
+            // Hide all containers
+            filePathContainer.classList.add('d-none');
+            rtspUrlContainer.classList.add('d-none');
+            webcamIdContainer.classList.add('d-none');
+            
+            // Show selected container
+            switch (value) {
+                case 'file':
+                    filePathContainer.classList.remove('d-none');
+                    break;
+                case 'rtsp':
+                    rtspUrlContainer.classList.remove('d-none');
+                    break;
+                case 'webcam':
+                    webcamIdContainer.classList.remove('d-none');
+                    break;
+            }
+        });
+        
+        // Confidence threshold change handler
+        confidenceThreshold.addEventListener('input', function() {
+            confidenceValue.textContent = this.value;
+        });
+        
+        // Speed threshold change handler
+        speedThreshold.addEventListener('input', function() {
+            speedValue.textContent = this.value;
+        });
+        
+        // Email alerts change handler
+        enableEmailAlerts.addEventListener('change', function() {
+            emailRecipients.disabled = !this.checked;
+        });
+        
+        // Form submit handler
+        settingsForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Validate form
+            if (!settingsForm.checkValidity()) {
+                e.stopPropagation();
+                settingsForm.classList.add('was-validated');
+                return;
+            }
+            
+            // Collect settings
+            const settings = {
+                videoSource: videoSource.value,
+                videoPath: document.getElementById('video-path').value,
+                rtspUrl: document.getElementById('rtsp-url').value,
+                webcamId: parseInt(document.getElementById('webcam-id').value),
+                confidenceThreshold: parseFloat(confidenceThreshold.value),
+                speedThreshold: parseInt(speedThreshold.value),
+                enableRedLight: document.getElementById('enable-red-light').checked,
+                enableWrongWay: document.getElementById('enable-wrong-way').checked,
+                enableIllegalParking: document.getElementById('enable-illegal-parking').checked,
+                enableNoHelmet: document.getElementById('enable-no-helmet').checked,
+                saveOutput: document.getElementById('save-output').checked,
+                outputPath: document.getElementById('output-path').value,
+                saveViolations: document.getElementById('save-violations').checked,
+                enableEmailAlerts: enableEmailAlerts.checked,
+                emailRecipients: emailRecipients.value,
+                enableWebNotifications: document.getElementById('enable-web-notifications').checked
+            };
+            
+            // Save settings to localStorage
+            localStorage.setItem('trafficSystemSettings', JSON.stringify(settings));
+            
+            // Show success alert
+            alert('Settings saved successfully!');
+        });
+        
+        // Reset defaults button handler
+        resetDefaultsBtn.addEventListener('click', function() {
+            if (confirm('Are you sure you want to reset all settings to default values?')) {
+                localStorage.removeItem('trafficSystemSettings');
+                loadSettings();
+            }
+        });
+        
+        // Load settings from localStorage
+        function loadSettings() {
+            const savedSettings = localStorage.getItem('trafficSystemSettings');
+            
+            if (savedSettings) {
+                const settings = JSON.parse(savedSettings);
+                
+                // Apply saved settings
+                videoSource.value = settings.videoSource;
+                document.getElementById('video-path').value = settings.videoPath;
+                document.getElementById('rtsp-url').value = settings.rtspUrl;
+                document.getElementById('webcam-id').value = settings.webcamId;
+                confidenceThreshold.value = settings.confidenceThreshold;
+                confidenceValue.textContent = settings.confidenceThreshold;
+                speedThreshold.value = settings.speedThreshold;
+                speedValue.textContent = settings.speedThreshold;
+                document.getElementById('enable-red-light').checked = settings.enableRedLight;
+                document.getElementById('enable-wrong-way').checked = settings.enableWrongWay;
+                document.getElementById('enable-illegal-parking').checked = settings.enableIllegalParking;
+                document.getElementById('enable-no-helmet').checked = settings.enableNoHelmet;
+                document.getElementById('save-output').checked = settings.saveOutput;
+                document.getElementById('output-path').value = settings.outputPath;
+                document.getElementById('save-violations').checked = settings.saveViolations;
+                enableEmailAlerts.checked = settings.enableEmailAlerts;
+                emailRecipients.value = settings.emailRecipients;
+                emailRecipients.disabled = !settings.enableEmailAlerts;
+                document.getElementById('enable-web-notifications').checked = settings.enableWebNotifications;
+                
+                // Trigger video source change event
+                videoSource.dispatchEvent(new Event('change'));
+            }
+        }
+        
+        // Load settings on page load
+        loadSettings();
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,1 @@
+# Initialize the vehicle_detection package
